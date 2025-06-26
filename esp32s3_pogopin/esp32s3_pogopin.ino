@@ -60,7 +60,7 @@ void setup() {
 
 void loop() {
 
-  delay(100);
+  delay(200);
 
   // // 0X2A地址处LDC1614
   // ldc1614_H.getData(1);
