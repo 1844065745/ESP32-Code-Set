@@ -82,7 +82,7 @@ void LDC1614::getData(int n)
 
 void LDC1614::init()
 {
-  Wire.begin(12, 13);   // esp32s3需要IO MUX映射引脚
+  Wire.begin(6, 7);   // esp32s3需要IO MUX映射引脚:12 13  | 6 7
   //进入睡眠模式，以开始初始化
   writeRegister(0x1C , 0x8000); 
   //配置多通道模式，共四个通道
