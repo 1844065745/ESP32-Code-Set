@@ -1,8 +1,6 @@
 #include <Wire.h>
 #include <WiFi.h>
 #include "LDC1614.h"
-#include "myTimer.h"
-
 
 #define AP_SSID "mywifi" 
 #define AP_PSW  "wangyueyang"
@@ -45,9 +43,6 @@ void setup() {
   Serial.begin(9600);
   Serial.println("begin INIT");
 
-  // pinMode(8, OUTPUT);
-  // digitalWrite(8, 0);
-
   //ldc1614_H.init();   //初始化LDC1614
   ldc1614_L.init();   //初始化LDC1614
   //wifi_connect(); //连接WIFI
@@ -63,8 +58,8 @@ void loop() {
   delay(100);
 
   // // 0X2A地址处LDC1614
-  // ldc1614_H.getData(1);
-  // for(int i=0;i<1;i++)
+  // ldc1614_H.getData(4);
+  // for(int i=0;i<4;i++)
   // {
   //   Serial.printf("%.3f ", ldc1614_H.L[i]);
   //   Serial.print(" | ");

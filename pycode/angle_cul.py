@@ -37,15 +37,18 @@ def udp_broadcast(ip, port):
     print("[UDP] Broadcast stopped.")
 
 def main():
+    # Initialize global variables
     global stop_broadcast
+    parts_packet_id_last = 0
+    parts_packet_id = 0 
 
     # 初始化 Excel 文件
     start_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    excel_file_name = f"{start_time}_data.xlsx"
-    print(f"Excel file name: {excel_file_name}")
-    columns = ['L1', 'L2', 'L3', 'L4']
+    csv_file_name = f"{start_time}_data.csv"
+    print(f"Excel file name: {csv_file_name}")
+    columns = ['id', 'L1', 'L2', 'L3', 'L4', 'ping']
     data_frame = pd.DataFrame(columns=columns)
-    data_frame = data_frame._append({'L1': 'L1', 'L2': 'L2', 'L3': 'L3', 'L4': 'L4'}, ignore_index=True)
+    data_frame = data_frame._append({'id': 'id', 'L1': 'L1', 'L2': 'L2', 'L3': 'L3', 'L4': 'L4', 'ping': 'ping'}, ignore_index=True)
 
     ip = get_host_ip()
     port = 10000
@@ -84,28 +87,36 @@ def main():
 
             if line.startswith("Ldata,"):
                 parts = line[6:].split(",")
-                parts = parts[1:5]  # 只保留 L1, L2, L3, L4 的数据
-                # print("Received Ldata:", parts, "Delta time:", delta_time)
-                if len(parts) == 4:
+                parts_data = parts[0:5]  # 只保留 L1, L2, L3, L4 的数据
+                parts_packet_id_last = parts_packet_id
+                parts_packet_id = int(parts[0])  # 包 ID
+                if parts_packet_id != parts_packet_id_last + 1:
+                    print(f"Missed {parts_packet_id - parts_packet_id_last} packet(s)")
+                print("Received Ldata:", parts, "Delta time:", delta_time)
+                if len(parts_data) == 5:
                     try:
-                        values = [round(float(p), 3) for p in parts]
-                        if any(v > 200 or v <= 1 for v in values):
-                            print("Invalid inductor data")
+                        values = [round(float(p), 3) for p in parts_data]
+                        if any(v > 100 or v <= 1 for v in values[1:5]):  # 检查 L1, L2, L3, L4 是否在合理范围内
+                            print("Invalid inductor data: >100 or <=1")
                             continue
                         new_row = dict(zip(columns, values))
+                        new_row["ping"] = delta_time  # 将 delta_time 加入这一行数据中
                         data_frame = data_frame._append(new_row, ignore_index=True)
-                        print("Parsed inductor:", new_row, " | Delta time:", delta_time, "ms")
+                        # print("Parsed inductor:", new_row, " | Delta time:", delta_time, "ms")
                     except ValueError:
                         print("Invalid float format")
                         continue
                 else:
-                    print("Unexpected data format")
+                    print("Unexpected data format length:", len(parts_data))
 
             if keyboard.is_pressed('esc'):
-                data_frame.to_excel(excel_file_name, index=False, header=False, engine='openpyxl')
-                print(f"Saved data to: {excel_file_name}")
+                data_frame.to_csv(csv_file_name, index=False, header=False)
+                print(f"Saved data to: {csv_file_name}")
                 break
 
+            if keyboard.is_pressed('q'):
+                break
+            
     except Exception as e:
         print("[ERROR]", e)
     finally:
